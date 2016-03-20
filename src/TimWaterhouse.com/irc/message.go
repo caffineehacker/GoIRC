@@ -8,15 +8,16 @@ import (
 	"strings"
 )
 
+// A Message represents an IRC message
 type Message struct {
 	prefix  string
 	command string
 	params  []string
 }
 
-func ReadUntilSpace(conn net.Conn) (string, bool) {
+func readUntilSpace(conn net.Conn) (string, bool) {
 	var messageBuffer bytes.Buffer
-	var eol bool = false
+	var eol = false
 
 	for {
 		var buffer = make([]byte, 1)
@@ -37,10 +38,10 @@ func ReadUntilSpace(conn net.Conn) (string, bool) {
 	return messageBuffer.String(), eol
 }
 
-func ReadUntilSpaceOrEOL(conn net.Conn) (string, bool) {
+func readUntilSpaceOrEOL(conn net.Conn) (string, bool) {
 	var messageBuffer bytes.Buffer
-	var eol bool = false
-	var firstChar bool = true
+	var eol = false
+	var firstChar = true
 	var readToEOL = false
 
 	for {
@@ -67,26 +68,29 @@ func ReadUntilSpaceOrEOL(conn net.Conn) (string, bool) {
 	return messageBuffer.String(), eol
 }
 
-/*
-<message>  ::= [':' <prefix> <SPACE> ] <command> <params> <crlf>
-<prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
-<command>  ::= <letter> { <letter> } | <number> <number> <number>
-<SPACE>    ::= ' ' { ' ' }
-<params>   ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
-
-<middle>   ::= <Any *non-empty* sequence of octets not including SPACE
-               or NUL or CR or LF, the first of which may not be ':'>
-<trailing> ::= <Any, possibly *empty*, sequence of octets not including
-                 NUL or CR or LF>
-
-<crlf>     ::= CR LF
-*/
+// ReadMessage reads an IRC message from conn and returns it.
 func ReadMessage(conn net.Conn) Message {
+	/*
+	  The format of a message is as follows:
+	  <message>  ::= [':' <prefix> <SPACE> ] <command> <params> <crlf>
+	  <prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
+	  <command>  ::= <letter> { <letter> } | <number> <number> <number>
+	  <SPACE>    ::= ' ' { ' ' }
+	  <params>   ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
+
+	  <middle>   ::= <Any *non-empty* sequence of octets not including SPACE
+	                 or NUL or CR or LF, the first of which may not be ':'>
+	  <trailing> ::= <Any, possibly *empty*, sequence of octets not including
+	                   NUL or CR or LF>
+
+	  <crlf>     ::= CR LF
+	*/
+
 	var m Message
-	var eol bool = false
+	var eol = false
 
 	var field string
-	field, eol = ReadUntilSpace(conn)
+	field, eol = readUntilSpace(conn)
 	if field[0] == ':' { // Indicates this is a prefix
 		m.prefix = field
 
@@ -95,14 +99,14 @@ func ReadMessage(conn net.Conn) Message {
 			return m
 		}
 
-		field, eol = ReadUntilSpace(conn)
+		field, eol = readUntilSpace(conn)
 	}
 
 	m.command = field
 
 	params := list.New()
 	for !eol {
-		field, eol = ReadUntilSpaceOrEOL(conn)
+		field, eol = readUntilSpaceOrEOL(conn)
 		params.PushBack(field)
 	}
 
@@ -116,6 +120,7 @@ func ReadMessage(conn net.Conn) Message {
 	return m
 }
 
+// ToString returns a string representation of the message. This is suitable for displaying to the user as well as for sending to the IRC server.
 func (m *Message) ToString() string {
 	var output string
 	if m.prefix != "" {
@@ -129,6 +134,7 @@ func (m *Message) ToString() string {
 	return output + strings.Join(m.params, " ")
 }
 
+// Send sends the message to an IRC server via conn
 func (m *Message) Send(conn net.Conn) {
 	fmt.Fprintf(conn, m.ToString()+"\r\n")
 }
