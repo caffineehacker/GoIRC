@@ -10,9 +10,9 @@ import (
 
 // A Message represents an IRC message
 type Message struct {
-	prefix  string
-	command string
-	params  []string
+	Prefix  string
+	Command string
+	Params  []string
 }
 
 func readUntilSpace(conn net.Conn) (string, bool) {
@@ -60,9 +60,9 @@ func readUntilSpaceOrEOL(conn net.Conn) (string, bool) {
 			break
 		} else if buffer[0] == '\r' {
 			continue
+		} else {
+			messageBuffer.Write(buffer)
 		}
-
-		messageBuffer.Write(buffer)
 	}
 
 	return messageBuffer.String(), eol
@@ -92,7 +92,7 @@ func ReadMessage(conn net.Conn) Message {
 	var field string
 	field, eol = readUntilSpace(conn)
 	if field[0] == ':' { // Indicates this is a prefix
-		m.prefix = field
+		m.Prefix = field
 
 		if eol {
 			// TODO: Error here since we shouldn't get just a prefix
@@ -102,7 +102,7 @@ func ReadMessage(conn net.Conn) Message {
 		field, eol = readUntilSpace(conn)
 	}
 
-	m.command = field
+	m.Command = field
 
 	params := list.New()
 	for !eol {
@@ -115,7 +115,7 @@ func ReadMessage(conn net.Conn) Message {
 		paramsList = append(paramsList, p.Value.(string))
 	}
 
-	m.params = paramsList
+	m.Params = paramsList
 
 	return m
 }
@@ -123,15 +123,15 @@ func ReadMessage(conn net.Conn) Message {
 // ToString returns a string representation of the message. This is suitable for displaying to the user as well as for sending to the IRC server.
 func (m *Message) ToString() string {
 	var output string
-	if m.prefix != "" {
-		output += m.prefix + " "
+	if m.Prefix != "" {
+		output += m.Prefix + " "
 	}
 
-	if m.command != "" {
-		output += m.command + " "
+	if m.Command != "" {
+		output += m.Command + " "
 	}
 
-	return output + strings.Join(m.params, " ")
+	return output + strings.Join(m.Params, " ")
 }
 
 // Send sends the message to an IRC server via conn
