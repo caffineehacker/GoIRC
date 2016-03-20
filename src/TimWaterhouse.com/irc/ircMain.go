@@ -1,12 +1,51 @@
-package irc
+package main
 
 import (
 	"fmt"
-	"net"
+
+	"github.com/nsf/termbox-go"
 )
 
+func print_tb(x, y int, fg, bg termbox.Attribute, msg string) {
+	for _, c := range msg {
+		termbox.SetCell(x, y, c, fg, bg)
+		x++
+	}
+}
+
+func printf_tb(x, y int, fg, bg termbox.Attribute, format string, args ...interface{}) {
+	s := fmt.Sprintf(format, args...)
+	print_tb(x, y, fg, bg, s)
+}
+
+func drawFrame() {
+	termbox.SetCell(0, 0, 'A', termbox.ColorGreen, termbox.ColorBlack)
+	printf_tb(3, 18, termbox.ColorWhite, termbox.ColorBlack, "Foooooo")
+}
+
 func main() {
-	fmt.Printf("Welcome to irc, enter server name with port: ")
+	tbErr := termbox.Init()
+
+	if tbErr != nil {
+		panic(tbErr)
+	}
+	defer termbox.Close()
+
+	termbox.SetInputMode(termbox.InputEsc)
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	drawFrame()
+	termbox.Flush()
+
+	for {
+		switch ev := termbox.PollEvent(); ev.Type {
+		case termbox.EventKey:
+			if ev.Key == termbox.KeyEsc {
+				return
+			}
+		}
+	}
+
+	/*fmt.Printf("Welcome to irc, enter server name with port: ")
 	var serverName string
 	fmt.Scanf("%s\n", &serverName)
 
@@ -39,5 +78,5 @@ func main() {
 			response.Send(conn)
 			fmt.Print(response.ToString() + "\n")
 		}
-	}
+	}*/
 }
