@@ -67,3 +67,7 @@ func (v *View) drawInputString() {
 		}
 	}
 }
+
+func (v *View) Resize() {
+	v.drawIrc()
+}

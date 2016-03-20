@@ -41,7 +41,7 @@ func main() {
 
 	termbox.SetInputMode(termbox.InputEsc)
 	var v View
-	v.SetInputString("")
+	v.Resize()
 
 	messageCh := make(chan irc.Message, 5)
 
@@ -55,7 +55,14 @@ func main() {
 				return
 			} else if ev.Key == termbox.KeyEnter {
 				// TODO: Handle entering a command
+				var m irc.Message
+				m.Command = inputString
+				m.Send(conn)
+				v.AppendMessage(m)
 				inputString = ""
+				fmt.Fprint(conn, "JOIN #reddit-dailyprogrammer,#botters-test\r\n")
+			} else if ev.Key == termbox.KeySpace {
+				inputString += " "
 			} else {
 				inputString += string(ev.Ch)
 			}
@@ -65,6 +72,9 @@ func main() {
 		case termbox.EventInterrupt:
 			msg := <-messageCh
 			v.AppendMessage(msg)
+			break
+		case termbox.EventResize:
+			v.Resize()
 			break
 		}
 	}
@@ -79,7 +89,8 @@ func readMessages(conn net.Conn, messageCh chan irc.Message) {
 			response.Command = "PONG"
 			response.Params = message.Params
 			response.Send(conn)
-			fmt.Print(response.ToString() + "\n")
+			messageCh <- message
+			messageCh <- response
 		} else {
 			messageCh <- message
 			termbox.Interrupt()

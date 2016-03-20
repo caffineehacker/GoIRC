@@ -135,6 +135,6 @@ func (m Message) ToString() string {
 }
 
 // Send sends the message to an IRC server via conn
-func (m *Message) Send(conn net.Conn) {
+func (m Message) Send(conn net.Conn) {
 	fmt.Fprintf(conn, m.ToString()+"\r\n")
 }
