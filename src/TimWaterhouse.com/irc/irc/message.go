@@ -121,7 +121,7 @@ func ReadMessage(conn net.Conn) Message {
 }
 
 // ToString returns a string representation of the message. This is suitable for displaying to the user as well as for sending to the IRC server.
-func (m *Message) ToString() string {
+func (m Message) ToString() string {
 	var output string
 	if m.Prefix != "" {
 		output += m.Prefix + " "

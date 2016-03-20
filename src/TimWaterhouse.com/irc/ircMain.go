@@ -1,7 +1,6 @@
 package main
 
 import (
-	"container/list"
 	"fmt"
 	"net"
 
@@ -41,10 +40,10 @@ func main() {
 	defer termbox.Close()
 
 	termbox.SetInputMode(termbox.InputEsc)
-	messageTexts := list.New()
-	drawIrc(messageTexts)
+	var v View
+	v.SetInputString("")
 
-	messageCh := make(chan string, 5)
+	messageCh := make(chan irc.Message, 5)
 
 	go readMessages(conn, messageCh)
 
@@ -61,18 +60,17 @@ func main() {
 				inputString += string(ev.Ch)
 			}
 
-			drawInputString(inputString)
+			v.SetInputString(inputString)
 			break
 		case termbox.EventInterrupt:
 			msg := <-messageCh
-			messageTexts.PushBack(msg)
-			drawIrc(messageTexts)
+			v.AppendMessage(msg)
 			break
 		}
 	}
 }
 
-func readMessages(conn net.Conn, messageCh chan string) {
+func readMessages(conn net.Conn, messageCh chan irc.Message) {
 	for {
 		var message = irc.ReadMessage(conn)
 
@@ -83,7 +81,7 @@ func readMessages(conn net.Conn, messageCh chan string) {
 			response.Send(conn)
 			fmt.Print(response.ToString() + "\n")
 		} else {
-			messageCh <- message.ToString() + "\n"
+			messageCh <- message
 			termbox.Interrupt()
 		}
 	}
