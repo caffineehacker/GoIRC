@@ -48,14 +48,20 @@ func main() {
 
 	go readMessages(conn, messageCh)
 
+	var inputString string
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			if ev.Key == termbox.KeyEsc {
 				return
+			} else if ev.Key == termbox.KeyEnter {
+				// TODO: Handle entering a command
+				inputString = ""
+			} else {
+				inputString += string(ev.Ch)
 			}
 
-			drawChar(ev.Key)
+			drawInputString(inputString)
 			break
 		case termbox.EventInterrupt:
 			msg := <-messageCh

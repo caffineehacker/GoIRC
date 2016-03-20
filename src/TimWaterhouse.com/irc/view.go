@@ -8,18 +8,6 @@ import (
 
 //text string
 
-/*func print_tb(x, y int, fg, bg termbox.Attribute, msg string) {
-	for _, c := range msg {
-		termbox.SetCell(x, y, c, fg, bg)
-		x++
-	}
-}
-
-func printf_tb(x, y int, fg, bg termbox.Attribute, format string, args ...interface{}) {
-	s := fmt.Sprintf(format, args...)
-	print_tb(x, y, fg, bg, s)
-}*/
-
 func drawSeparator() {
 	var width, height = termbox.Size()
 	for x := 0; x < width; x++ {
@@ -53,7 +41,23 @@ func drawIrc(messageTexts *list.List) {
 	termbox.Flush()
 }
 
-func drawChar(key termbox.Key) {
-	termbox.SetCell(0, 0, 'A', termbox.ColorBlack, termbox.ColorGreen)
+func drawInputString(inputString string) {
+	var width, height = termbox.Size()
+	var linesRequired = len(inputString)/width + 1
+
+	var charIndex int
+	for y := height - (1 + linesRequired); y >= 0 && y < height-1; y++ {
+		for x := 0; x < width; x++ {
+			var c rune
+			if charIndex < len(inputString) {
+				c = []rune(inputString)[charIndex]
+			} else {
+				c = ' '
+			}
+			termbox.SetCell(x, y, c, termbox.ColorBlack, termbox.ColorGreen)
+
+			charIndex++
+		}
+	}
 	termbox.Flush()
 }
