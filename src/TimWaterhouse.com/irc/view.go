@@ -22,7 +22,13 @@ func (v *View) drawMessages() {
 		for ; y >= 0 && linesRequired > 0; y-- {
 			var x int
 			for charIndex := width * (linesRequired - 1); charIndex < len(msgStr) && x < width; charIndex++ {
-				termbox.SetCell(x, y, []rune(msgStr)[charIndex], termbox.ColorWhite, termbox.ColorBlack)
+				var backColor = termbox.ColorBlack
+				if charIndex < len(msg.Value.(irc.Message).Prefix) {
+					backColor = termbox.ColorGreen
+				} else if charIndex < len(msg.Value.(irc.Message).Prefix)+len(msg.Value.(irc.Message).Command)+1 {
+					backColor = termbox.ColorMagenta
+				}
+				termbox.SetCell(x, y, []rune(msgStr)[charIndex], termbox.ColorWhite, backColor)
 				x++
 			}
 

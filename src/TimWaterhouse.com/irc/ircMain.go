@@ -60,7 +60,6 @@ func main() {
 				m.Send(conn)
 				v.AppendMessage(m)
 				inputString = ""
-				fmt.Fprint(conn, "JOIN #reddit-dailyprogrammer,#botters-test\r\n")
 			} else if ev.Key == termbox.KeySpace {
 				inputString += " "
 			} else {
