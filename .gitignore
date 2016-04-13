@@ -49,3 +49,4 @@ bin/
 pkg/
 src/*
 !src/timwaterhouse.com
+*.exe
